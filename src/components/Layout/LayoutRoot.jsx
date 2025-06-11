@@ -16,7 +16,7 @@ const LayoutRoot = () => {
     setDeviceLog,
   } = useHandleDevice();
 
-  const [outputData, setOutputData] = useState('F5');
+  const [outputData, setOutputData] = useState('F5 05 31 2E 30 2E 32 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ');
 
   // 新增: 用于日志自动滚动到底部
   const logTextAreaRef = useRef(null);
@@ -156,7 +156,7 @@ const LayoutRoot = () => {
               <TextArea
                 value={outputData}
                 onChange={(e) => setOutputData(e.target.value)}
-                autoSize={{ minRows: 3 }}
+                autoSize={{ minRows: 5 }}
                 style={{ minHeight: 60, resize: 'vertical' }}
               />
 
@@ -196,7 +196,7 @@ const LayoutRoot = () => {
               <TextArea
                 readOnly
                 value={reportContent}
-                style={{ flex: 1, height: 'calc(100vh - 300px)', resize: 'vertical' }}
+                style={{ flex: 1, height: 'calc(100vh - 350px)', resize: 'vertical' }}
                 ref={reportTextAreaRef}
               />
             </div>
