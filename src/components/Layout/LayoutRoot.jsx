@@ -8,8 +8,6 @@ const { TextArea } = Input;
 const LayoutRoot = () => {
   const {
     device,
-    deviceStatus,
-    deviceName,
     handleOpenDevice,
     addToQueue,
     reportContent,
@@ -18,13 +16,11 @@ const LayoutRoot = () => {
     setDeviceLog,
   } = useHandleDevice();
 
-  const [inputData, setInputData] = useState('');
   const [outputData, setOutputData] = useState('F5');
-  const [isSending, setIsSending] = useState(false);
-  const [isBootloader, setIsBootloader] = useState(false);
 
   // 新增: 用于日志自动滚动到底部
   const logTextAreaRef = useRef(null);
+  const reportTextAreaRef = useRef(null);
 
   useEffect(() => {
     if (
@@ -32,10 +28,21 @@ const LayoutRoot = () => {
       logTextAreaRef.current.resizableTextArea &&
       logTextAreaRef.current.resizableTextArea.textArea
     ) {
-      const textArea = logTextAreaRef.current.resizableTextArea.textArea;
-      textArea.scrollTop = textArea.scrollHeight || 0;
+      const logTextArea = logTextAreaRef.current.resizableTextArea.textArea;
+      logTextArea.scrollTop = logTextArea.scrollHeight || 0;
     }
   }, [deviceLog]);
+
+  useEffect(() => {
+    if (
+      reportTextAreaRef.current &&
+      reportTextAreaRef.current.resizableTextArea &&
+      reportTextAreaRef.current.resizableTextArea.textArea
+    ) {
+      const reportTextArea = reportTextAreaRef.current.resizableTextArea.textArea;
+      reportTextArea.scrollTop = reportTextArea.scrollHeight || 0;
+    }
+  }, [reportContent]);
 
   const handleConnectDevice = async () => {
     handleOpenDevice()
@@ -55,30 +62,25 @@ const LayoutRoot = () => {
 
   return (
     <div>
-      <div className='title'>HID 网页调试工具</div>
       <div className='layout-root'>
         <div style={{ display: 'flex', gap: '20px' }}>
           <div className='left-panel' style={{ width: '400px' }}>
+            <div className='title'>HID 网页调试工具</div>
             <div style={{ marginBottom: '16px' }}>
               <Button
                 id="btnOpen"
                 onClick={handleConnectDevice}
-                disabled={deviceStatus === 'connecting'}
                 type="primary"
                 block
               >
                 连接设备
               </Button>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-              {/*
-                使用 antd 的 Table 组件来展示设备信息
-              */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <Table
                 size="small"
                 pagination={false}
                 showHeader={false}
-                bordered
                 style={{ marginBottom: 16 }}
                 columns={[
                   { title: '属性', dataIndex: 'label', key: 'label', width: 90 },
@@ -90,7 +92,7 @@ const LayoutRoot = () => {
                     label: '设备名称',
                     value: (
                       <>
-                        {deviceName ? (
+                        {device?.productName ? (
                           <span
                             style={{
                               display: 'inline-block',
@@ -100,9 +102,9 @@ const LayoutRoot = () => {
                               whiteSpace: 'nowrap',
                               verticalAlign: 'bottom',
                             }}
-                            title={deviceName}
+                            title={device.productName}
                           >
-                            {deviceName}
+                            {device.productName}
                           </span>
                         ) : (
                           <Skeleton.Button size="small" style={{ width: 80 }} />
@@ -150,37 +152,7 @@ const LayoutRoot = () => {
               />
             </div>
             <div>
-              <div>设备日志</div>
-              <div>
-                <Button onClick={handleClearLog} type="default">
-                  清空日志
-                </Button>
-              </div>
-              <TextArea
-                readOnly
-                value={deviceLog}
-                style={{ height: 'calc(100vh - 600px)' }}
-                ref={logTextAreaRef}
-              />
-            </div>
-          </div>
-          <div className='right-panel' style={{ flex: 1 }}>
-            <div>
-              <div className="panel-header">
-                <div>接收区</div>
-                <Button onClick={handleClearReportContent} type="link">
-                  清空
-                </Button>
-              </div>
-
-              <TextArea
-                readOnly
-                value={reportContent}
-                style={{ flex: 1, height: 'calc(100vh - 300px)', resize: 'vertical' }}
-              />
-            </div>
-            <div>
-              <div className="panel-header">发送区</div>
+              <div>发送区</div>
               <TextArea
                 value={outputData}
                 onChange={(e) => setOutputData(e.target.value)}
@@ -194,11 +166,39 @@ const LayoutRoot = () => {
                   style={{ width: '100px' }}
                   onClick={sendData}
                   type="primary"
-                  loading={isSending}
                 >
-                  {isSending ? '发送中...' : '发送数据'}
+                  发送数据
                 </Button>
               </div>
+            </div>
+          </div>
+          <div className='right-panel' style={{ flex: 1 }}>
+            <div>
+              <div style={{ display: 'flex', gap: '0px', alignItems: 'center' }}>
+                <div>日志区</div>
+                <Button onClick={handleClearLog} type="link">清空日志区</Button>
+              </div>
+              <TextArea
+                readOnly
+                value={deviceLog}
+                style={{ height: '188px' }}
+                ref={logTextAreaRef}
+              />
+            </div>
+            <div>
+              <div style={{ display: 'flex', gap: '0px', alignItems: 'center', marginTop: '12px' }}>
+                <div>接收区</div>
+                <Button onClick={handleClearReportContent} type="link">
+                  清空接收区
+                </Button>
+              </div>
+
+              <TextArea
+                readOnly
+                value={reportContent}
+                style={{ flex: 1, height: 'calc(100vh - 300px)', resize: 'vertical' }}
+                ref={reportTextAreaRef}
+              />
             </div>
           </div>
         </div>

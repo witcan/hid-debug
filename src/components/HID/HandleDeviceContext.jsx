@@ -83,7 +83,7 @@ export function HandleDeviceProvider({ children }) {
   const send_data = async (iptOutput) => {
     try {
       if (!device?.opened) {
-        setDeviceLog(prev => prev ? prev + '\n' + '[INFO] 未发现设备' : '[INFO] 未发现设备');
+        setDeviceLog(prev => prev ? prev + '\n' + '[SYS] 未发现设备' : '[SYS] 未发现设备');
         throw "Device not opened";
       }
       let outputData;
@@ -99,7 +99,7 @@ export function HandleDeviceProvider({ children }) {
         throw "Data is not even or 0-9、a-f、A-F";
       }
       await device.sendReport(0, outputData);
-      setDeviceLog(prev => prev ? prev + '\n' + '[INFO] 数据发送成功' : '[INFO] 数据发送成功');
+      setDeviceLog(prev => prev ? prev + '\n' + `[INFO] 已发送 ${outputData.length} 字节` : `[INFO] 已发送 ${outputData.length} 字节`);
     } catch (error) {
       setDeviceLog(prev => prev ? prev + '\n' + '[ERROR] 数据发送失败: ' + error : '[ERROR] 数据发送失败: ' + error);
       dataQueue.reset(); // Reset queue on error
@@ -129,7 +129,7 @@ export function HandleDeviceProvider({ children }) {
             setDeviceStatus('connected-device');
             setDeviceName(`${device.productName}`);
             device_oninputreport(device);
-            setDeviceLog(prev => prev ? prev + '\n' + '[INFO] 设备自动连接成功' : '[INFO] 设备自动连接成功');
+            setDeviceLog(prev => prev ? prev + '\n' + '[SYS] 设备自动连接成功' : '[SYS] 设备自动连接成功');
           } catch (error) {
             if (error.name === 'InvalidStateError') {
               console.log('Device state change already in progress, skipping...');
@@ -154,7 +154,7 @@ export function HandleDeviceProvider({ children }) {
           setDeviceStatus('connected-device');
           setDeviceName(`${event.device.productName}`);
           device_oninputreport(event.device);
-          setDeviceLog(prev => prev ? prev + '\n' + '[INFO] 设备自动连接成功' : '[INFO] 设备自动连接成功');
+          setDeviceLog(prev => prev ? prev + '\n' + '[SYS] 设备自动连接成功' : '[SYS] 设备自动连接成功');
         });
       }
     };
@@ -166,7 +166,7 @@ export function HandleDeviceProvider({ children }) {
         setDeviceStatus('no-device');
         setDeviceName(null);
         setDeviceProductId(null);
-        setDeviceLog(prev => prev ? prev + '\n' + '[INFO] 已断开连接' : '[INFO] 已断开连接');
+        setDeviceLog(prev => prev ? prev + '\n' + '[SYS] 已断开连接' : '[SYS] 已断开连接');
       }
     };
   }, [device]);
@@ -196,7 +196,7 @@ export function HandleDeviceProvider({ children }) {
         await selectedDevice.open();
         setDeviceStatus('connected-device');
         setDeviceName(`${selectedDevice.productName}`);
-        setDeviceLog(prev => prev ? prev + '\n' + '[INFO] 设备连接成功' : '[INFO] 设备连接成功');
+        setDeviceLog(prev => prev ? prev + '\n' + '[SYS] 设备连接成功' : '[SYS] 设备连接成功');
         const waitForDeviceOpen = () => {
           if (selectedDevice.opened) {
             device_oninputreport(selectedDevice);
@@ -221,7 +221,7 @@ export function HandleDeviceProvider({ children }) {
         for (const data of array) {
           hexstr += (Array(2).join(0) + data.toString(16).toUpperCase()).slice(-2) + " ";
         }
-
+        setDeviceLog(prev => prev ? prev + '\n' + `[INFO] 已接收 ${array.length} 字节` : `[INFO] 已接收 ${array.length} 字节`);
         setReportContent(prev => prev ? prev + "\n" + hexstr : hexstr);
 
         if (dataQueue.isProcessing) {

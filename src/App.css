@@ -1,13 +1,13 @@
 .layout-root {
-  padding: 0 100px;
+  padding: 10px 100px;
 }
 
 .title {
-  margin-top: 20px;
   font-size: 24px;
   font-weight: bold;
   text-align: center;
   margin-bottom: 20px;
+  margin-top: 5px;
 }
 
 .ant-skeleton-button.ant-skeleton-button-sm {
