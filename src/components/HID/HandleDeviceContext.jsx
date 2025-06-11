@@ -129,6 +129,7 @@ export function HandleDeviceProvider({ children }) {
             setDeviceStatus('connected-device');
             setDeviceName(`${device.productName}`);
             device_oninputreport(device);
+            setDeviceLog(prev => prev ? prev + '\n' + '[INFO] 设备自动连接成功' : '[INFO] 设备自动连接成功');
           } catch (error) {
             if (error.name === 'InvalidStateError') {
               console.log('Device state change already in progress, skipping...');
@@ -153,7 +154,7 @@ export function HandleDeviceProvider({ children }) {
           setDeviceStatus('connected-device');
           setDeviceName(`${event.device.productName}`);
           device_oninputreport(event.device);
-          setDeviceLog(prev => prev ? prev + '\n' : '') + '[INFO] 设备自动连接成功';
+          setDeviceLog(prev => prev ? prev + '\n' + '[INFO] 设备自动连接成功' : '[INFO] 设备自动连接成功');
         });
       }
     };
@@ -165,7 +166,7 @@ export function HandleDeviceProvider({ children }) {
         setDeviceStatus('no-device');
         setDeviceName(null);
         setDeviceProductId(null);
-        setDeviceLog(prev => prev ? prev + '\n' : '') + '[INFO] 已断开连接';
+        setDeviceLog(prev => prev ? prev + '\n' + '[INFO] 已断开连接' : '[INFO] 已断开连接');
       }
     };
   }, [device]);
@@ -175,65 +176,9 @@ export function HandleDeviceProvider({ children }) {
     try {
       const devices = await navigator.hid.requestDevice({
         filters: [
-          { // EZ80 自研新固件
+          {
             usagePage: 0xff60,
-            usage: 0x61,
-            productId: 9010,
-            vendorId: 13495,
-          },
-          { // EZ80 自研新固件更新状态
-            usagePage: 0xff60,
-            usage: 0x61,
-            productId: 4660,
-            vendorId: 13495,
-          },
-          { // EZ75 自研新固件
-            usagePage: 0xff60,
-            usage: 0x61,
-            productId: 29952,
-            vendorId: 117,
-          },
-          { // EZ75 自研新固件更新状态
-            usagePage: 0xff60,
-            usage: 0x61,
-            productId: 29953,
-            vendorId: 117,
-          },
-          { // 新EZ60
-            usagePage: 0xff60,
-            usage: 0x61,
-            productId: 36880,
-            vendorId: 51966,
-          },
-          { // 新EZ63 新固件
-            usagePage: 0xff60,
-            usage: 0x61,
-            productId: 36869,
-            vendorId: 51966,
-          },
-          { // EZ63 老固件
-            usagePage: 0xff60,
-            usage: 0x61,
-            productId: 32773,
-            vendorId: 51966,
-          },
-          { // EZ63 自研新固件
-            usagePage: 0xff60,
-            usage: 0x61,
-            productId: 25344,
-            vendorId: 99,
-          },
-          { // EZ63 自研新固件更新状态
-            usagePage: 0xff60,
-            usage: 0x61,
-            productId: 25345,
-            vendorId: 99,
-          },
-          { // EZ60
-            usagePage: 0xff60,
-            usage: 0x61,
-            productId: 32784,
-            vendorId: 51966,
+            usage: 0x61
           }
         ]
       });
@@ -251,7 +196,7 @@ export function HandleDeviceProvider({ children }) {
         await selectedDevice.open();
         setDeviceStatus('connected-device');
         setDeviceName(`${selectedDevice.productName}`);
-        setDeviceLog(prev => prev ? prev + '\n' : '') + '[INFO] 设备连接成功';
+        setDeviceLog(prev => prev ? prev + '\n' + '[INFO] 设备连接成功' : '[INFO] 设备连接成功');
         const waitForDeviceOpen = () => {
           if (selectedDevice.opened) {
             device_oninputreport(selectedDevice);
