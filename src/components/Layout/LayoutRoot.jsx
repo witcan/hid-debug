@@ -14,6 +14,10 @@ const LayoutRoot = () => {
     setReportContent,
     deviceLog,
     setDeviceLog,
+    setDevice, // for disconnect
+    setDeviceStatus, // for disconnect
+    setDeviceName, // for disconnect
+    setDeviceProductId, // for disconnect
   } = useHandleDevice();
 
   const [outputData, setOutputData] = useState('F5 05 31 2E 30 2E 32 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ');
@@ -45,7 +49,24 @@ const LayoutRoot = () => {
   }, [reportContent]);
 
   const handleConnectDevice = async () => {
-    handleOpenDevice()
+    handleOpenDevice();
+  };
+
+  // 新增: 断开设备逻辑
+  const handleDisconnectDevice = async () => {
+    if (device && device.opened) {
+      try {
+        setDevice(null);
+        await device.close(); // 关闭设备
+        await device.forget() // 遗忘设备
+      } catch (e) {
+        // ignore error
+      }
+    }
+    setDeviceStatus && setDeviceStatus('no-device');
+    setDeviceName && setDeviceName(null);
+    setDeviceProductId && setDeviceProductId(null);
+    setDeviceLog(prev => prev ? prev + '\n' + '[SYS] 设备已断开' : '[SYS] 设备已断开');
   };
 
   const handleClearLog = () => {
@@ -67,14 +88,24 @@ const LayoutRoot = () => {
           <div className='left-panel' style={{ width: '400px' }}>
             <div className='title'>HID 网页调试工具</div>
             <div style={{ marginBottom: '16px' }}>
-              <Button
-                id="btnOpen"
-                onClick={handleConnectDevice}
-                type="primary"
-                block
-              >
-                连接设备
-              </Button>
+              {device && device.opened ? (
+                <Button
+                  onClick={handleDisconnectDevice}
+                  type="primary"
+                  danger
+                  block
+                >
+                  断开设备
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleConnectDevice}
+                  type="primary"
+                  block
+                >
+                  连接设备
+                </Button>
+              )}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <Table
