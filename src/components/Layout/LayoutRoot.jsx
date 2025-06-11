@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useHandleDevice } from '../HID/HandleDeviceContext';
 import { Button, Input, Table } from 'antd';
 import { Skeleton } from "antd";
+import SendArea from './SendArea';
 
 const { TextArea } = Input;
 
@@ -75,10 +76,6 @@ const LayoutRoot = () => {
 
   const handleClearReportContent = () => {
     setReportContent('');
-  };
-
-  const sendData = async () => {
-    addToQueue(outputData);
   };
 
   return (
@@ -183,24 +180,7 @@ const LayoutRoot = () => {
               />
             </div>
             <div>
-              <div>发送区</div>
-              <TextArea
-                value={outputData}
-                onChange={(e) => setOutputData(e.target.value)}
-                autoSize={{ minRows: 5 }}
-                style={{ minHeight: 60, resize: 'vertical' }}
-              />
-
-              <div style={{ display: 'flex', gap: '10px', marginTop: '0.5rem' }}>
-                <Button
-                  id="btnSend"
-                  style={{ width: '100px' }}
-                  onClick={sendData}
-                  type="primary"
-                >
-                  发送数据
-                </Button>
-              </div>
+              <SendArea />
             </div>
           </div>
           <div className='right-panel' style={{ flex: 1 }}>
