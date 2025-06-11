@@ -5,6 +5,10 @@ export const HandleDeviceContext = createContext({
   deviceStatus: 'no-device',
   deviceName: null,
   deviceProductId: null,
+  reportContent: null,
+  setReportContent: () => {},
+  deviceLog: null,
+  setDeviceLog: () => {},
   setDevice: () => {},
   setDeviceStatus: () => {},
   setDeviceName: () => {},
@@ -72,11 +76,14 @@ export function HandleDeviceProvider({ children }) {
   const [deviceStatus, setDeviceStatus] = useState('no-device');
   const [deviceName, setDeviceName] = useState(null);
   const [deviceProductId, setDeviceProductId] = useState(null);
+  const [reportContent, setReportContent] = useState('');
+  const [deviceLog, setDeviceLog] = useState('');
   const [dataQueue] = useState(() => new DataQueue());
 
   const send_data = async (iptOutput) => {
     try {
       if (!device?.opened) {
+        setDeviceLog(prev => prev ? prev + '\n' + '[INFO] 未发现设备' : '[INFO] 未发现设备');
         throw "Device not opened";
       }
       let outputData;
@@ -92,8 +99,9 @@ export function HandleDeviceProvider({ children }) {
         throw "Data is not even or 0-9、a-f、A-F";
       }
       await device.sendReport(0, outputData);
+      setDeviceLog(prev => prev ? prev + '\n' + '[INFO] 数据发送成功' : '[INFO] 数据发送成功');
     } catch (error) {
-      console.log(error);
+      setDeviceLog(prev => prev ? prev + '\n' + '[ERROR] 数据发送失败: ' + error : '[ERROR] 数据发送失败: ' + error);
       dataQueue.reset(); // Reset queue on error
     }
   };
@@ -145,6 +153,7 @@ export function HandleDeviceProvider({ children }) {
           setDeviceStatus('connected-device');
           setDeviceName(`${event.device.productName}`);
           device_oninputreport(event.device);
+          setDeviceLog(prev => prev ? prev + '\n' : '') + '[INFO] 设备自动连接成功';
         });
       }
     };
@@ -156,6 +165,7 @@ export function HandleDeviceProvider({ children }) {
         setDeviceStatus('no-device');
         setDeviceName(null);
         setDeviceProductId(null);
+        setDeviceLog(prev => prev ? prev + '\n' : '') + '[INFO] 已断开连接';
       }
     };
   }, [device]);
@@ -241,6 +251,7 @@ export function HandleDeviceProvider({ children }) {
         await selectedDevice.open();
         setDeviceStatus('connected-device');
         setDeviceName(`${selectedDevice.productName}`);
+        setDeviceLog(prev => prev ? prev + '\n' : '') + '[INFO] 设备连接成功';
         const waitForDeviceOpen = () => {
           if (selectedDevice.opened) {
             device_oninputreport(selectedDevice);
@@ -266,6 +277,8 @@ export function HandleDeviceProvider({ children }) {
           hexstr += (Array(2).join(0) + data.toString(16).toUpperCase()).slice(-2) + " ";
         }
 
+        setReportContent(prev => prev ? prev + "\n" + hexstr : hexstr);
+
         if (dataQueue.isProcessing) {
           dataQueue.isProcessing = false;
           dataQueue.continueProcessing();
@@ -280,6 +293,10 @@ export function HandleDeviceProvider({ children }) {
       deviceStatus,
       deviceName,
       deviceProductId,
+      reportContent,
+      deviceLog,
+      setDeviceLog,
+      setReportContent,
       setDevice,
       setDeviceStatus,
       setDeviceName,
