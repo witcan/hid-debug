@@ -10,7 +10,6 @@ const LayoutRoot = () => {
   const {
     device,
     handleOpenDevice,
-    addToQueue,
     reportContent,
     setReportContent,
     deviceLog,
