@@ -6,6 +6,7 @@ import { useHandleDevice } from '../HID/HandleDeviceContext';
 const { TextArea } = Input;
 
 const LOCAL_KEY = 'hid_sendarea_shortcuts';
+const LOCAL_TOTALBYTES_KEY = 'hid_sendarea_totalbytes';
 
 function loadShortcuts() {
   try {
@@ -19,6 +20,21 @@ function loadShortcuts() {
 
 function saveShortcuts(shortcuts) {
   localStorage.setItem(LOCAL_KEY, JSON.stringify(shortcuts));
+}
+
+function loadTotalBytes() {
+  try {
+    const data = localStorage.getItem(LOCAL_TOTALBYTES_KEY);
+    if (data) {
+      const n = parseInt(data, 10);
+      if (!isNaN(n) && n > 0) return n;
+    }
+  } catch (e) {}
+  return 32; // 默认32
+}
+
+function saveTotalBytes(n) {
+  localStorage.setItem(LOCAL_TOTALBYTES_KEY, String(n));
 }
 
 const defaultValue = 'F5 05 31 2E 30 2E 32 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ';
@@ -45,13 +61,16 @@ const SendArea = () => {
   const [form] = Form.useForm();
 
   // 新增：补全字节功能
-  const [totalBytes, setTotalBytes] = useState(33); // 默认33字节
+  const [totalBytes, setTotalBytes] = useState(() => loadTotalBytes());
 
   useEffect(() => {
     setShortcuts(loadShortcuts());
-    // 自动根据默认值推断字节数
+    // 如果 localStorage 没有 totalBytes，则自动根据默认值推断字节数并存储
     const arr = defaultValue.trim().split(/\s+/).filter(Boolean);
-    setTotalBytes(arr.length);
+    if (!localStorage.getItem(LOCAL_TOTALBYTES_KEY)) {
+      setTotalBytes(arr.length);
+      saveTotalBytes(arr.length);
+    }
   }, []);
 
   const sendData = async () => {
@@ -126,6 +145,13 @@ const SendArea = () => {
     setOutputData(prev => padBytes(prev, totalBytes));
   };
 
+  // 处理总字节数变化
+  const handleTotalBytesChange = (v) => {
+    const n = v || 1;
+    setTotalBytes(n);
+    saveTotalBytes(n);
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
@@ -163,7 +189,7 @@ const SendArea = () => {
             min={1}
             max={256}
             value={totalBytes}
-            onChange={v => setTotalBytes(v || 1)}
+            onChange={handleTotalBytesChange}
             style={{ width: 70 }}
             size="small"
           />
