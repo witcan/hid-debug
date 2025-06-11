@@ -20,8 +20,6 @@ const LayoutRoot = () => {
     setDeviceProductId, // for disconnect
   } = useHandleDevice();
 
-  const [outputData, setOutputData] = useState('F5 05 31 2E 30 2E 32 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ');
-
   // 新增: 用于日志自动滚动到底部
   const logTextAreaRef = useRef(null);
   const reportTextAreaRef = useRef(null);

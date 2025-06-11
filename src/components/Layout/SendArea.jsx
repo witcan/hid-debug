@@ -124,6 +124,17 @@ const SendArea = () => {
         style={{ minHeight: 60, resize: 'vertical' }}
       />
 
+      <div style={{ display: 'flex', gap: '10px', marginTop: '0.5rem' }}>
+        <Button
+          id="btnSend"
+          style={{ width: '100px' }}
+          onClick={sendData}
+          type="primary"
+        >
+          发送数据
+        </Button>
+      </div>
+
       {/* 快捷指令按钮区 */}
       {shortcuts.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '10px 0' }}>
@@ -158,17 +169,6 @@ const SendArea = () => {
           ))}
         </div>
       )}
-
-      <div style={{ display: 'flex', gap: '10px', marginTop: '0.5rem' }}>
-        <Button
-          id="btnSend"
-          style={{ width: '100px' }}
-          onClick={sendData}
-          type="primary"
-        >
-          发送数据
-        </Button>
-      </div>
 
       <Modal
         title={editingIndex === null ? '添加快捷指令' : '编辑快捷指令'}
