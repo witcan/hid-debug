@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Button, Input, Modal, Form, Space, Tooltip } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
+import { Button, Input, Modal, Form, Space, Tooltip, InputNumber } from 'antd';
+import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { useHandleDevice } from '../HID/HandleDeviceContext';
 
 const { TextArea } = Input;
@@ -23,6 +23,17 @@ function saveShortcuts(shortcuts) {
 
 const defaultValue = 'F5 05 31 2E 30 2E 32 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ';
 
+function padBytes(str, totalBytes) {
+  // 以空格分割，过滤空字符串
+  let arr = str.trim().split(/\s+/).filter(Boolean);
+  if (arr.length >= totalBytes) {
+    return arr.slice(0, totalBytes).join(' ') + ' ';
+  }
+  // 补全
+  let padded = arr.concat(Array(totalBytes - arr.length).fill('00'));
+  return padded.join(' ') + ' ';
+}
+
 const SendArea = () => {
   const [outputData, setOutputData] = useState(defaultValue);
   const { addToQueue } = useHandleDevice();
@@ -33,8 +44,14 @@ const SendArea = () => {
   const [editingIndex, setEditingIndex] = useState(null); // null: 新增, number: 编辑
   const [form] = Form.useForm();
 
+  // 新增：补全字节功能
+  const [totalBytes, setTotalBytes] = useState(33); // 默认33字节
+
   useEffect(() => {
     setShortcuts(loadShortcuts());
+    // 自动根据默认值推断字节数
+    const arr = defaultValue.trim().split(/\s+/).filter(Boolean);
+    setTotalBytes(arr.length);
   }, []);
 
   const sendData = async () => {
@@ -104,6 +121,11 @@ const SendArea = () => {
     setOutputData(shortcuts[index].command);
   };
 
+  // 一键补全按钮事件
+  const handlePadBytes = () => {
+    setOutputData(prev => padBytes(prev, totalBytes));
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
@@ -117,23 +139,46 @@ const SendArea = () => {
           />
         </Tooltip>
       </div>
+
       <TextArea
         value={outputData}
         onChange={(e) => setOutputData(e.target.value)}
         autoSize={{ minRows: 5 }}
         style={{ minHeight: 60, resize: 'vertical' }}
       />
-
-      <div style={{ display: 'flex', gap: '10px', marginTop: '0.5rem' }}>
-        <Button
-          id="btnSend"
-          style={{ width: '100px' }}
-          onClick={sendData}
-          type="primary"
-        >
-          发送数据
-        </Button>
+      <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <Button
+            id="btnSend"
+            style={{ width: '100px' }}
+            onClick={sendData}
+            type="primary"
+          >
+            发送数据
+          </Button>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 8 }}>
+          <span>总字节数:</span>
+          <InputNumber
+            min={1}
+            max={256}
+            value={totalBytes}
+            onChange={v => setTotalBytes(v || 1)}
+            style={{ width: 70 }}
+            size="small"
+          />
+          <Tooltip title="用00补全到指定字节数">
+            <Button
+              size="small"
+              onClick={handlePadBytes}
+              style={{ marginLeft: 4 }}
+            >
+              一键补全
+            </Button>
+          </Tooltip>
+        </div>
       </div>
+
 
       {/* 快捷指令按钮区 */}
       {shortcuts.length > 0 && (
