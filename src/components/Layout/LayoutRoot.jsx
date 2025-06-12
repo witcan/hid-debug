@@ -76,7 +76,7 @@ const LayoutRoot = () => {
   };
 
   return (
-    <div>
+    <div className='container'>
       <div className='layout-root'>
         <div style={{ display: 'flex', gap: '20px' }}>
           <div className='left-panel' style={{ width: '400px' }}>

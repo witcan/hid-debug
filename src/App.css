@@ -1,5 +1,14 @@
+.container {
+  max-width: 1520px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+}
+
 .layout-root {
   padding: 10px 100px;
+  width: 100%;
 }
 
 .title {
