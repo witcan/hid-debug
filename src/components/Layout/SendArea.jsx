@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Button, Input, Modal, Form, Space, Tooltip, InputNumber } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { useState, useEffect, useRef } from 'react';
+import { Button, Input, Modal, Form, Space, Tooltip, InputNumber, Upload, message } from 'antd';
+import { EditOutlined, DeleteOutlined, PlusOutlined, UploadOutlined, PauseCircleOutlined, CaretRightOutlined, StopOutlined } from '@ant-design/icons';
 import { useHandleDevice } from '../HID/HandleDeviceContext';
+import HexConvert from '../Utils/HexConvert';
 
 const { TextArea } = Input;
 
@@ -50,9 +51,48 @@ function padBytes(str, totalBytes) {
   return padded.join(' ') + ' ';
 }
 
+// 将字符串转为按字节分组的数组
+function splitToChunks(str, totalBytes) {
+  let arr = str.trim().split(/\s+/).filter(Boolean);
+  let chunks = [];
+  for (let i = 0; i < arr.length; i += totalBytes) {
+    let chunk = arr.slice(i, i + totalBytes);
+    if (chunk.length < totalBytes) {
+      chunk = chunk.concat(Array(totalBytes - chunk.length).fill('00'));
+    }
+    chunks.push(chunk.join(' ') + ' ');
+  }
+  return chunks;
+}
+
+// 解析文件为十六进制字符串数组
+function fileToHexChunks(file, totalBytes, cb) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const buffer = new Uint8Array(e.target.result);
+    let hexArr = [];
+    for (let i = 0; i < buffer.length; i++) {
+      hexArr.push(buffer[i].toString(16).toUpperCase().padStart(2, '0'));
+    }
+    const chunks = [];
+    for (let i = 0; i < hexArr.length; i += totalBytes) {
+      let chunk = hexArr.slice(i, i + totalBytes);
+      if (chunk.length < totalBytes) {
+        chunk = chunk.concat(Array(totalBytes - chunk.length).fill('00'));
+      }
+      chunks.push(chunk.join(' ') + ' ');
+    }
+    cb(chunks);
+  };
+  reader.onerror = function () {
+    message.error('文件读取失败');
+  };
+  reader.readAsArrayBuffer(file);
+}
+
 const SendArea = () => {
   const [outputData, setOutputData] = useState(defaultValue);
-  const { addToQueue } = useHandleDevice();
+  const { send_data } = useHandleDevice();
 
   // 快捷指令相关
   const [shortcuts, setShortcuts] = useState([]);
@@ -62,6 +102,17 @@ const SendArea = () => {
 
   // 新增：补全字节功能
   const [totalBytes, setTotalBytes] = useState(() => loadTotalBytes());
+
+  // 批量发送相关
+  const [batchList, setBatchList] = useState([]); // 批量待发送的指令数组
+  const [batchIndex, setBatchIndex] = useState(0);
+  const [isBatchSending, setIsBatchSending] = useState(false);
+  const [isBatchPaused, setIsBatchPaused] = useState(false);
+  const [batchInterval, setBatchInterval] = useState(1); // ms
+  const batchTimerRef = useRef(null);
+
+  // 文件上传相关
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     setShortcuts(loadShortcuts());
@@ -73,8 +124,54 @@ const SendArea = () => {
     }
   }, []);
 
+  // 批量发送定时器
+  useEffect(() => {
+    if (isBatchSending && !isBatchPaused && batchList.length > 0) {
+      batchTimerRef.current = setTimeout(async () => {
+        if (batchIndex < batchList.length) {
+          send_data(batchList[batchIndex]);
+          setBatchIndex(idx => idx + 1);
+        } else {
+          setIsBatchSending(false);
+          setBatchIndex(0);
+          setBatchList([]);
+        }
+      }, batchInterval);
+    } else {
+      clearTimeout(batchTimerRef.current);
+    }
+    return () => clearTimeout(batchTimerRef.current);
+    // eslint-disable-next-line
+  }, [isBatchSending, isBatchPaused, batchIndex, batchList, batchInterval]);
+
   const sendData = async () => {
-    addToQueue(outputData);
+    send_data(outputData);
+  };
+
+  // 批量发送：将当前内容按总字节数分割后批量发送
+  const handleBatchSend = () => {
+    const chunks = splitToChunks(outputData, totalBytes);
+    if (chunks.length === 0) {
+      message.warning('没有可发送的数据');
+      return;
+    }
+    setBatchList(chunks);
+    setBatchIndex(0);
+    setIsBatchSending(true);
+    setIsBatchPaused(false);
+  };
+
+  // 停止批量发送
+  const handleBatchStop = () => {
+    setIsBatchSending(false);
+    setBatchIndex(0);
+    setBatchList([]);
+    setIsBatchPaused(false);
+  };
+
+  // 暂停/继续批量发送
+  const handleBatchPauseResume = () => {
+    setIsBatchPaused(paused => !paused);
   };
 
   // 新增/编辑快捷指令
@@ -152,6 +249,65 @@ const SendArea = () => {
     saveTotalBytes(n);
   };
 
+  // 文件上传处理
+  const handleFileUpload = (file) => {
+    setUploading(true);
+    fileToHexChunks(file, totalBytes, (chunks) => {
+      setOutputData(chunks.join('\n'));
+      setUploading(false);
+      message.success('文件已解析为十六进制并填充到发送区');
+    });
+    return false; // 阻止自动上传
+  };
+
+  // 批量发送区块
+  const renderBatchControls = () => {
+    if (!isBatchSending) {
+      return (
+        <Button
+          onClick={handleBatchSend}
+          type="dashed"
+          style={{ marginLeft: 8 }}
+        >
+          批量发送
+        </Button>
+      );
+    }
+    return (
+      <Space style={{ marginLeft: 8 }}>
+        <Button
+          icon={isBatchPaused ? <CaretRightOutlined /> : <PauseCircleOutlined />}
+          onClick={handleBatchPauseResume}
+        >
+          {isBatchPaused ? '继续' : '暂停'}
+        </Button>
+        <Button
+          icon={<StopOutlined />}
+          danger
+          onClick={handleBatchStop}
+        >
+          停止
+        </Button>
+        <span>
+          进度: {batchIndex}/{batchList.length}
+        </span>
+        <span>
+          间隔(ms):
+          <InputNumber
+            min={0}
+            max={10000}
+            step={10}
+            value={batchInterval}
+            onChange={setBatchInterval}
+            size="small"
+            style={{ width: 80, marginLeft: 4 }}
+            disabled={isBatchPaused}
+          />
+        </span>
+      </Space>
+    );
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
@@ -164,13 +320,31 @@ const SendArea = () => {
             style={{ marginLeft: 8 }}
           />
         </Tooltip>
+        <Upload
+          beforeUpload={handleFileUpload}
+          showUploadList={false}
+          accept=".bin,.hex,.uf2"
+          disabled={uploading}
+        >
+          <Tooltip title="上传文件并按总字节数分包">
+            <Button
+              icon={<UploadOutlined />}
+              size="small"
+              loading={uploading}
+              style={{ marginLeft: 8 }}
+            >
+              上传文件
+            </Button>
+          </Tooltip>
+        </Upload>
       </div>
 
       <TextArea
         value={outputData}
         onChange={(e) => setOutputData(e.target.value)}
         autoSize={{ minRows: 5 }}
-        style={{ minHeight: 60, resize: 'vertical' }}
+        style={{ minHeight: 60, maxHeight: 600, resize: 'vertical' }}
+        placeholder="支持粘贴/上传十六进制数据，多个包可用换行分隔"
       />
       <div style={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem' }}>
         <div style={{ display: 'flex', gap: '10px' }}>
@@ -179,9 +353,11 @@ const SendArea = () => {
             style={{ width: '100px' }}
             onClick={sendData}
             type="primary"
+            disabled={isBatchSending}
           >
             发送数据
           </Button>
+          {renderBatchControls()}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 8 }}>
           <span>总字节数:</span>
@@ -192,19 +368,20 @@ const SendArea = () => {
             onChange={handleTotalBytesChange}
             style={{ width: 70 }}
             size="small"
+            disabled={isBatchSending}
           />
           <Tooltip title="用00补全到指定字节数">
             <Button
               size="small"
               onClick={handlePadBytes}
               style={{ marginLeft: 4 }}
+              disabled={isBatchSending}
             >
               一键补全
             </Button>
           </Tooltip>
         </div>
       </div>
-
 
       {/* 快捷指令按钮区 */}
       {shortcuts.length > 0 && (
@@ -216,6 +393,7 @@ const SendArea = () => {
                 style={{ minWidth: 80 }}
                 onClick={() => handleUseShortcut(idx)}
                 title={item.command}
+                disabled={isBatchSending}
               >
                 {item.name}
               </Button>
@@ -225,6 +403,7 @@ const SendArea = () => {
                   size="small"
                   type="text"
                   onClick={() => openShortcutModal(idx)}
+                  disabled={isBatchSending}
                 />
               </Tooltip>
               <Tooltip title="删除">
@@ -234,12 +413,17 @@ const SendArea = () => {
                   type="text"
                   danger
                   onClick={() => handleDeleteShortcut(idx)}
+                  disabled={isBatchSending}
                 />
               </Tooltip>
             </Space>
           ))}
         </div>
       )}
+
+      <div>
+        <HexConvert />
+      </div>
 
       <Modal
         title={editingIndex === null ? '添加快捷指令' : '编辑快捷指令'}

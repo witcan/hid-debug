@@ -16,6 +16,7 @@ export const HandleDeviceContext = createContext({
   handleOpenDevice: () => {},
   addToQueue: () => {},
   dataQueue: () => {},
+  send_data: () => {},
 });
 
 class DataQueue {
@@ -29,20 +30,21 @@ class DataQueue {
     this.send_data = sendDataFn;
   }
 
-  addToQueue(data) {
+  addToQueue(data, bytes = 32) {
     let cleanString = data.replace(/\s+/g, '');
 
     // 计算现有字符串的字节数
     const currentLength = cleanString.length / 2; // 每两个字符是一个字节
 
     // 计算需要补充的字节数
-    const neededLength = 32 - currentLength;
+    const neededLength = bytes - currentLength;
 
     // 如果需要补充字节，填充 '00' 到剩余长度
     if (neededLength > 0) {
-        cleanString += '00'.repeat(neededLength); // 补充 '00'
+      cleanString += '00'.repeat(neededLength); // 补充 '00'
     }
 
+    console.log(cleanString.match(/.{2}/g).join(' '));
     this.queue.push(cleanString.match(/.{2}/g).join(' '));
     this.processQueue();
   }
