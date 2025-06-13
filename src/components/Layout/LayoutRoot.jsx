@@ -174,9 +174,9 @@ const LayoutRoot = () => {
           </div>
           <div className='right-panel' style={{ flex: 1 }}>
             <div>
-              <div style={{ display: 'flex', gap: '0px', alignItems: 'center' }}>
-                <div>日志区</div>
-                <Button onClick={handleClearLog} type="link">清空日志区</Button>
+              <div style={{ display: 'flex', gap: '0px', alignItems: 'center', marginBottom: '6px' }}>
+                <div style={{ flex: 1 }}>日志区</div>
+                <Button onClick={handleClearLog}>清空日志区</Button>
               </div>
               <Card size="small">
                 <div style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', height: '188px', overflow: 'auto' }} ref={logTextAreaRef} id="iptLog">
@@ -185,14 +185,12 @@ const LayoutRoot = () => {
               </Card>
             </div>
             <div>
-              <div style={{ display: 'flex', gap: '0px', alignItems: 'center', marginTop: '12px' }}>
-                <div>接收区</div>
-                <Button onClick={handleClearReportContent} type="link">
-                  清空接收区
-                </Button>
+              <div style={{ display: 'flex', gap: '0px', alignItems: 'center', marginTop: '12px', marginBottom: '6px' }}>
+                <div style={{ flex: 1 }}>接收区</div>
+                <Button onClick={handleClearReportContent}>清空接收区</Button>
               </div>
               <Card size="small" >
-                <div style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', height: 'calc(100vh - 350px)', overflow: 'auto' }} ref={reportTextAreaRef} id="iptLog">
+                <div style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', height: 'calc(100vh - 370px)', overflow: 'auto' }} ref={reportTextAreaRef} id="iptLog">
                   {reportContent}
                 </div>
               </Card>
