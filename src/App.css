@@ -19,9 +19,6 @@ html, body {
 .title {
   font-size: 24px;
   font-weight: bold;
-  text-align: center;
-  margin-bottom: 20px;
-  margin-top: 5px;
 }
 
 .ant-skeleton-button.ant-skeleton-button-sm {

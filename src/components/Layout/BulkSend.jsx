@@ -1,7 +1,9 @@
-import { Button, InputNumber, Space } from 'antd';
+import { Button, InputNumber, Space, Typography } from 'antd';
 import { useState, useEffect, useRef } from 'react';
 import { CaretRightOutlined, PauseCircleOutlined, StopOutlined } from '@ant-design/icons';
 import { useHandleDevice } from '../HID/HandleDeviceContext';
+
+const { Text } = Typography;
 
 const BulkSend = ({ outputData, totalBytes }) => {
   // 批量发送区块
@@ -84,7 +86,7 @@ const BulkSend = ({ outputData, totalBytes }) => {
           >
             批量发送
           </Button>
-          <span style={{ marginLeft: 8 }}>
+          <Text style={{ marginLeft: 8 }}>
             间隔(ms):
             <InputNumber
               min={10}
@@ -96,7 +98,7 @@ const BulkSend = ({ outputData, totalBytes }) => {
               style={{ width: 80, marginLeft: 4 }}
               disabled={isBatchPaused}
             />
-          </span>
+          </Text>
         </>
       );
     }
@@ -115,10 +117,10 @@ const BulkSend = ({ outputData, totalBytes }) => {
         >
           停止
         </Button>
-        <span>
+        <Text>
           进度: {batchIndex}/{batchList.length}
-        </span>
-        <span>
+        </Text>
+        <Text>
           间隔(ms):
           <InputNumber
             min={10}
@@ -130,7 +132,7 @@ const BulkSend = ({ outputData, totalBytes }) => {
             style={{ width: 80, marginLeft: 4 }}
             disabled={isBatchPaused}
           />
-        </span>
+        </Text>
       </Space>
     );
   };

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Button, Input, Tooltip, InputNumber } from 'antd';
+import { Button, Input, Tooltip, InputNumber, Typography } from 'antd';
 import { useHandleDevice } from '../HID/HandleDeviceContext';
 import HexConvert from '../Utils/HexConvert';
 import BulkSend from './BulkSend';
 import UploadFile from './UploadFile';
 import Shortcut from './Shortcut';
+
+const { Text } = Typography;
 
 const { TextArea } = Input;
 
@@ -73,7 +75,7 @@ const SendArea = () => {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-        <span style={{ flex: 1 }}>发送区</span>
+        <Text style={{ flex: 1 }}>发送区</Text>
         <UploadFile totalBytes={totalBytes} setOutputData={setOutputData} />
       </div>
 
@@ -96,7 +98,7 @@ const SendArea = () => {
           </Button>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 8 }}>
-          <span>总字节数:</span>
+          <Text>总字节数:</Text>
           <InputNumber
             min={1}
             max={256}

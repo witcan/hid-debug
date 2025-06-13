@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useHandleDevice } from '../HID/HandleDeviceContext';
-import { Button, Table, Card, ConfigProvider, Switch, theme } from 'antd';
+import { Button, Table, Card, ConfigProvider, Switch, theme, Typography } from 'antd';
 import { Skeleton } from "antd";
 import SendArea from './SendArea';
+
+const { Text } = Typography;
 
 const LayoutRoot = () => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -89,7 +91,7 @@ const LayoutRoot = () => {
             <div style={{ display: 'flex', gap: '20px' }}>
               <div className='left-panel' style={{ width: '400px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                  <div className='title'>HID 网页调试工具</div>
+                  <Text className='title'>HID 网页调试工具</Text>
                   <Switch
                     checked={isDarkMode}
                     onChange={setIsDarkMode}
@@ -199,7 +201,7 @@ const LayoutRoot = () => {
               <div className='right-panel' style={{ flex: 1 }}>
                 <div>
                   <div style={{ display: 'flex', gap: '0px', alignItems: 'center', marginBottom: '6px' }}>
-                    <div style={{ flex: 1 }}>日志区</div>
+                    <div style={{ flex: 1 }}><Text>日志区</Text></div>
                     <Button onClick={handleClearLog}>清空日志区</Button>
                   </div>
                   <Card size="small">
@@ -210,7 +212,7 @@ const LayoutRoot = () => {
                 </div>
                 <div>
                   <div style={{ display: 'flex', gap: '0px', alignItems: 'center', marginTop: '12px', marginBottom: '6px' }}>
-                    <div style={{ flex: 1 }}>接收区</div>
+                    <div style={{ flex: 1 }}><Text>接收区</Text></div>
                     <Button onClick={handleClearReportContent}>清空接收区</Button>
                   </div>
                   <Card size="small" >
