@@ -3,6 +3,7 @@ import { Button, Input, Modal, Form, Space, Tooltip, InputNumber, Upload, messag
 import { EditOutlined, DeleteOutlined, PlusOutlined, UploadOutlined, PauseCircleOutlined, CaretRightOutlined, StopOutlined } from '@ant-design/icons';
 import { useHandleDevice } from '../HID/HandleDeviceContext';
 import HexConvert from '../Utils/HexConvert';
+import BulkSend from './BulkSend';
 
 const { TextArea } = Input;
 
@@ -38,7 +39,7 @@ function saveTotalBytes(n) {
   localStorage.setItem(LOCAL_TOTALBYTES_KEY, String(n));
 }
 
-const defaultValue = 'F5 05 31 2E 30 2E 32 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ';
+const defaultValue = 'F5 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ';
 
 function padBytes(str, totalBytes) {
   // 以空格分割，过滤空字符串
@@ -49,20 +50,6 @@ function padBytes(str, totalBytes) {
   // 补全
   let padded = arr.concat(Array(totalBytes - arr.length).fill('00'));
   return padded.join(' ') + ' ';
-}
-
-// 将字符串转为按字节分组的数组
-function splitToChunks(str, totalBytes) {
-  let arr = str.trim().split(/\s+/).filter(Boolean);
-  let chunks = [];
-  for (let i = 0; i < arr.length; i += totalBytes) {
-    let chunk = arr.slice(i, i + totalBytes);
-    if (chunk.length < totalBytes) {
-      chunk = chunk.concat(Array(totalBytes - chunk.length).fill('00'));
-    }
-    chunks.push(chunk.join(' ') + ' ');
-  }
-  return chunks;
 }
 
 // 解析文件为十六进制字符串数组
@@ -103,14 +90,6 @@ const SendArea = () => {
   // 新增：补全字节功能
   const [totalBytes, setTotalBytes] = useState(() => loadTotalBytes());
 
-  // 批量发送相关
-  const [batchList, setBatchList] = useState([]); // 批量待发送的指令数组
-  const [batchIndex, setBatchIndex] = useState(0);
-  const [isBatchSending, setIsBatchSending] = useState(false);
-  const [isBatchPaused, setIsBatchPaused] = useState(false);
-  const [batchInterval, setBatchInterval] = useState(1); // ms
-  const batchTimerRef = useRef(null);
-
   // 文件上传相关
   const [uploading, setUploading] = useState(false);
 
@@ -123,56 +102,6 @@ const SendArea = () => {
       saveTotalBytes(arr.length);
     }
   }, []);
-
-  // 批量发送定时器
-  useEffect(() => {
-    if (isBatchSending && !isBatchPaused && batchList.length > 0) {
-      batchTimerRef.current = setTimeout(async () => {
-        if (batchIndex < batchList.length) {
-          send_data(batchList[batchIndex]);
-          setBatchIndex(idx => idx + 1);
-        } else {
-          setIsBatchSending(false);
-          setBatchIndex(0);
-          setBatchList([]);
-        }
-      }, batchInterval);
-    } else {
-      clearTimeout(batchTimerRef.current);
-    }
-    return () => clearTimeout(batchTimerRef.current);
-    // eslint-disable-next-line
-  }, [isBatchSending, isBatchPaused, batchIndex, batchList, batchInterval]);
-
-  const sendData = async () => {
-    send_data(outputData);
-  };
-
-  // 批量发送：将当前内容按总字节数分割后批量发送
-  const handleBatchSend = () => {
-    const chunks = splitToChunks(outputData, totalBytes);
-    if (chunks.length === 0) {
-      message.warning('没有可发送的数据');
-      return;
-    }
-    setBatchList(chunks);
-    setBatchIndex(0);
-    setIsBatchSending(true);
-    setIsBatchPaused(false);
-  };
-
-  // 停止批量发送
-  const handleBatchStop = () => {
-    setIsBatchSending(false);
-    setBatchIndex(0);
-    setBatchList([]);
-    setIsBatchPaused(false);
-  };
-
-  // 暂停/继续批量发送
-  const handleBatchPauseResume = () => {
-    setIsBatchPaused(paused => !paused);
-  };
 
   // 新增/编辑快捷指令
   const openShortcutModal = (index = null) => {
@@ -260,52 +189,8 @@ const SendArea = () => {
     return false; // 阻止自动上传
   };
 
-  // 批量发送区块
-  const renderBatchControls = () => {
-    if (!isBatchSending) {
-      return (
-        <Button
-          onClick={handleBatchSend}
-          type="dashed"
-          style={{ marginLeft: 8 }}
-        >
-          批量发送
-        </Button>
-      );
-    }
-    return (
-      <Space style={{ marginLeft: 8 }}>
-        <Button
-          icon={isBatchPaused ? <CaretRightOutlined /> : <PauseCircleOutlined />}
-          onClick={handleBatchPauseResume}
-        >
-          {isBatchPaused ? '继续' : '暂停'}
-        </Button>
-        <Button
-          icon={<StopOutlined />}
-          danger
-          onClick={handleBatchStop}
-        >
-          停止
-        </Button>
-        <span>
-          进度: {batchIndex}/{batchList.length}
-        </span>
-        <span>
-          间隔(ms):
-          <InputNumber
-            min={0}
-            max={10000}
-            step={10}
-            value={batchInterval}
-            onChange={setBatchInterval}
-            size="small"
-            style={{ width: 80, marginLeft: 4 }}
-            disabled={isBatchPaused}
-          />
-        </span>
-      </Space>
-    );
+  const sendData = async () => {
+    send_data(outputData);
   };
 
   return (
@@ -353,11 +238,9 @@ const SendArea = () => {
             style={{ width: '100px' }}
             onClick={sendData}
             type="primary"
-            disabled={isBatchSending}
           >
             发送数据
           </Button>
-          {renderBatchControls()}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 8 }}>
           <span>总字节数:</span>
@@ -368,14 +251,12 @@ const SendArea = () => {
             onChange={handleTotalBytesChange}
             style={{ width: 70 }}
             size="small"
-            disabled={isBatchSending}
           />
           <Tooltip title="用00补全到指定字节数">
             <Button
               size="small"
               onClick={handlePadBytes}
               style={{ marginLeft: 4 }}
-              disabled={isBatchSending}
             >
               一键补全
             </Button>
@@ -393,7 +274,6 @@ const SendArea = () => {
                 style={{ minWidth: 80 }}
                 onClick={() => handleUseShortcut(idx)}
                 title={item.command}
-                disabled={isBatchSending}
               >
                 {item.name}
               </Button>
@@ -403,7 +283,6 @@ const SendArea = () => {
                   size="small"
                   type="text"
                   onClick={() => openShortcutModal(idx)}
-                  disabled={isBatchSending}
                 />
               </Tooltip>
               <Tooltip title="删除">
@@ -413,7 +292,6 @@ const SendArea = () => {
                   type="text"
                   danger
                   onClick={() => handleDeleteShortcut(idx)}
-                  disabled={isBatchSending}
                 />
               </Tooltip>
             </Space>
@@ -421,7 +299,11 @@ const SendArea = () => {
         </div>
       )}
 
-      <div>
+      <div style={{ marginTop: '20px' }}>
+        <BulkSend outputData={outputData} totalBytes={totalBytes} />
+      </div>
+
+      <div style={{ marginTop: '20px' }}>
         <HexConvert />
       </div>
 
@@ -432,7 +314,7 @@ const SendArea = () => {
         onCancel={handleModalCancel}
         okText={editingIndex === null ? '添加' : '保存'}
         cancelText="取消"
-        destroyOnClose
+        destroyOnHide
       >
         <Form
           form={form}

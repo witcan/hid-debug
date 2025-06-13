@@ -67,8 +67,7 @@ const HexConvert = () => {
     <Card
       title="进制转换工具"
       size="small"
-      style={{ maxWidth: 420, margin: '0 auto' }}
-      bodyStyle={{ padding: 18 }}
+      style={{ maxWidth: 420, margin: '0 auto', padding: 8 }}
     >
       <Space direction="vertical" style={{ width: '100%' }} size="middle">
         <Row align="middle" gutter={8}>

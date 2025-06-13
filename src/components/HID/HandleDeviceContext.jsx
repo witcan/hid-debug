@@ -178,10 +178,7 @@ export function HandleDeviceProvider({ children }) {
     try {
       const devices = await navigator.hid.requestDevice({
         filters: [
-          {
-            usagePage: 0xff60,
-            usage: 0x61
-          }
+
         ]
       });
 
