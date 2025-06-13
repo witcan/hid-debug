@@ -7,7 +7,7 @@ const BulkSend = ({ outputData, totalBytes }) => {
   // 批量发送区块
   const [isBatchSending, setIsBatchSending] = useState(false);
   const [isBatchPaused, setIsBatchPaused] = useState(false);
-  const [batchInterval, setBatchInterval] = useState(1); // ms
+  const [batchInterval, setBatchInterval] = useState(10); // ms
   const [batchList, setBatchList] = useState([]);
   const [batchIndex, setBatchIndex] = useState(0);
   const { send_data } = useHandleDevice();
@@ -87,7 +87,7 @@ const BulkSend = ({ outputData, totalBytes }) => {
           <span style={{ marginLeft: 8 }}>
             间隔(ms):
             <InputNumber
-              min={0}
+              min={10}
               max={10000}
               step={10}
               value={batchInterval}
@@ -121,7 +121,7 @@ const BulkSend = ({ outputData, totalBytes }) => {
         <span>
           间隔(ms):
           <InputNumber
-            min={0}
+            min={10}
             max={10000}
             step={10}
             value={batchInterval}
