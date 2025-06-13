@@ -5,7 +5,7 @@ function App() {
   return (
     <>
       <HandleDeviceProvider>
-        <LayoutRoot></LayoutRoot>
+        <LayoutRoot />
       </HandleDeviceProvider>
     </>
   )

@@ -24,3 +24,7 @@ html, body {
 .ant-skeleton-button.ant-skeleton-button-sm {
   height: 20px !important;
 }
+
+.ant-wave {
+  display: none
+}
