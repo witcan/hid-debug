@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useHandleDevice } from '../HID/HandleDeviceContext';
-import { Button, Input, Table } from 'antd';
+import { Button, Input, Table, Card } from 'antd';
 import { Skeleton } from "antd";
 import SendArea from './SendArea';
 
@@ -25,24 +25,16 @@ const LayoutRoot = () => {
   const reportTextAreaRef = useRef(null);
 
   useEffect(() => {
-    if (
-      logTextAreaRef.current &&
-      logTextAreaRef.current.resizableTextArea &&
-      logTextAreaRef.current.resizableTextArea.textArea
-    ) {
-      const logTextArea = logTextAreaRef.current.resizableTextArea.textArea;
-      logTextArea.scrollTop = logTextArea.scrollHeight || 0;
+    if (logTextAreaRef.current) {
+      const logTextArea = logTextAreaRef.current;
+      logTextArea.scrollTop = logTextArea.scrollHeight;
     }
   }, [deviceLog]);
 
   useEffect(() => {
-    if (
-      reportTextAreaRef.current &&
-      reportTextAreaRef.current.resizableTextArea &&
-      reportTextAreaRef.current.resizableTextArea.textArea
-    ) {
-      const reportTextArea = reportTextAreaRef.current.resizableTextArea.textArea;
-      reportTextArea.scrollTop = reportTextArea.scrollHeight || 0;
+    if (reportTextAreaRef.current) {
+      const reportTextArea = reportTextAreaRef.current;
+      reportTextArea.scrollTop = reportTextArea.scrollHeight;
     }
   }, [reportContent]);
 
@@ -186,12 +178,11 @@ const LayoutRoot = () => {
                 <div>日志区</div>
                 <Button onClick={handleClearLog} type="link">清空日志区</Button>
               </div>
-              <TextArea
-                readOnly
-                value={deviceLog}
-                style={{ height: '188px' }}
-                ref={logTextAreaRef}
-              />
+              <Card size="small">
+                <div style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', height: '188px', overflow: 'auto' }} ref={logTextAreaRef} id="iptLog">
+                  {deviceLog}
+                </div>
+              </Card>
             </div>
             <div>
               <div style={{ display: 'flex', gap: '0px', alignItems: 'center', marginTop: '12px' }}>
@@ -200,13 +191,11 @@ const LayoutRoot = () => {
                   清空接收区
                 </Button>
               </div>
-
-              <TextArea
-                readOnly
-                value={reportContent}
-                style={{ flex: 1, height: 'calc(100vh - 350px)', resize: 'vertical' }}
-                ref={reportTextAreaRef}
-              />
+              <Card size="small" >
+                <div style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', height: 'calc(100vh - 350px)', overflow: 'auto' }} ref={reportTextAreaRef} id="iptLog">
+                  {reportContent}
+                </div>
+              </Card>
             </div>
           </div>
         </div>
