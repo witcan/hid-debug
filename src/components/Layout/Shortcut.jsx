@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Form, Input, Modal, Space, Tooltip, Button, InputNumber } from 'antd';
+import { Form, Input, Modal, Space, Tooltip, Button, Card } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 
 const { TextArea } = Input;
@@ -20,24 +20,20 @@ function saveShortcuts(shortcuts) {
 }
 
 const Shortcut = ({outputData, setOutputData}) => {
-  // 快捷指令相关
   const [shortcuts, setShortcuts] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingIndex, setEditingIndex] = useState(null); // null: 新增, number: 编辑
+  const [editingIndex, setEditingIndex] = useState(null);
   const [form] = Form.useForm();
 
   useEffect(() => {
     setShortcuts(loadShortcuts());
   }, [])
 
-  // 新增/编辑快捷指令
   const openShortcutModal = (index = null) => {
     setEditingIndex(index);
     if (index === null) {
-      // 新增
       form.setFieldsValue({ name: '', command: outputData });
     } else {
-      // 编辑
       form.setFieldsValue({
         name: shortcuts[index].name,
         command: shortcuts[index].command,
@@ -50,13 +46,11 @@ const Shortcut = ({outputData, setOutputData}) => {
     form.validateFields().then(values => {
       let newShortcuts = [...shortcuts];
       if (editingIndex === null) {
-        // 新增
         newShortcuts.push({
           name: values.name,
           command: values.command,
         });
       } else {
-        // 编辑
         newShortcuts[editingIndex] = {
           name: values.name,
           command: values.command,
@@ -94,82 +88,86 @@ const Shortcut = ({outputData, setOutputData}) => {
   };
 
   return (
-    <div>
-      {/* 快捷指令按钮区 */}
-      {shortcuts.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '10px 0' }}>
-          {shortcuts.map((item, idx) => (
-            <Space key={idx} size={0}>
-              <Button
-                size="small"
-                style={{ minWidth: 80 }}
-                onClick={() => handleUseShortcut(idx)}
-                title={item.command}
-              >
-                {item.name}
-              </Button>
-              <Tooltip title="编辑">
-                <Button
-                  icon={<EditOutlined />}
-                  size="small"
-                  type="text"
-                  onClick={() => openShortcutModal(idx)}
-                />
-              </Tooltip>
-              <Tooltip title="删除">
-                <Button
-                  icon={<DeleteOutlined />}
-                  size="small"
-                  type="text"
-                  danger
-                  onClick={() => handleDeleteShortcut(idx)}
-                />
-              </Tooltip>
-            </Space>
-          ))}
-        </div>
-      )}
-
-      <Modal
-        title={editingIndex === null ? '添加快捷指令' : '编辑快捷指令'}
-        open={showModal}
-        onOk={handleModalOk}
-        onCancel={handleModalCancel}
-        okText={editingIndex === null ? '添加' : '保存'}
-        cancelText="取消"
-        destroyOnHide
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={{ name: '', command: outputData }}
-        >
-          <Form.Item
-            label="按钮名称"
-            name="name"
-            rules={[{ required: true, message: '请输入按钮名称' }]}
-          >
-            <Input maxLength={20} />
-          </Form.Item>
-          <Form.Item
-            label="指令内容"
-            name="command"
-            rules={[{ required: true, message: '请输入指令内容' }]}
-          >
-            <TextArea autoSize={{ minRows: 2 }} />
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      <Tooltip title="添加快捷指令">
+    <Card
+      title="快捷指令"
+      size="small"
+      style={{ maxWidth: 420, margin: '0 auto', padding: 8 }}
+      extra={<Tooltip title="新建快捷指令">
         <Button
           icon={<PlusOutlined />}
           size="small"
           onClick={() => openShortcutModal(null)}
-          style={{ marginLeft: 8 }}
         />
       </Tooltip>
-    </div>
+      }
+    >
+      <Space direction="vertical" style={{ width: '100%' }} size="middle">
+        {shortcuts.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {shortcuts.map((item, idx) => (
+              <Space key={idx} size={0}>
+                <Button
+                  size="small"
+                  style={{ minWidth: 80 }}
+                  onClick={() => handleUseShortcut(idx)}
+                  title={item.command}
+                >
+                  {item.name}
+                </Button>
+                <Tooltip title="编辑">
+                  <Button
+                    icon={<EditOutlined />}
+                    size="small"
+                    type="text"
+                    onClick={() => openShortcutModal(idx)}
+                  />
+                </Tooltip>
+                <Tooltip title="删除">
+                  <Button
+                    icon={<DeleteOutlined />}
+                    size="small"
+                    type="text"
+                    danger
+                    onClick={() => handleDeleteShortcut(idx)}
+                  />
+                </Tooltip>
+              </Space>
+            ))}
+          </div>
+        )}
+
+        <Modal
+          title={editingIndex === null ? '添加快捷指令' : '编辑快捷指令'}
+          open={showModal}
+          onOk={handleModalOk}
+          onCancel={handleModalCancel}
+          okText={editingIndex === null ? '添加' : '保存'}
+          cancelText="取消"
+          destroyOnHide
+        >
+          <Form
+            form={form}
+            layout="vertical"
+            initialValues={{ name: '', command: outputData }}
+          >
+            <Form.Item
+              label="按钮名称"
+              name="name"
+              rules={[{ required: true, message: '请输入按钮名称' }]}
+            >
+              <Input maxLength={20} />
+            </Form.Item>
+            <Form.Item
+              label="指令内容"
+              name="command"
+              rules={[{ required: true, message: '请输入指令内容' }]}
+            >
+              <TextArea autoSize={{ minRows: 2 }} />
+            </Form.Item>
+          </Form>
+        </Modal>
+      </Space>
+    </Card>
   );
 };
 
