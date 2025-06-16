@@ -205,7 +205,7 @@ const LayoutRoot = () => {
                     <div style={{ flex: 1 }}><Text>日志区</Text></div>
                     <Button onClick={handleClearLog}>清空日志区</Button>
                   </div>
-                  <Card size="small">
+                  <Card size="small" style={{ border: isDarkMode ? '1px solid #303030' : '1px solid #d9d9d9' }}>
                     <div style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', height: '188px', overflow: 'auto' }} ref={logTextAreaRef} id="iptLog">
                       {deviceLog}
                     </div>
@@ -216,7 +216,7 @@ const LayoutRoot = () => {
                     <div style={{ flex: 1 }}><Text>接收区</Text></div>
                     <Button onClick={handleClearReportContent}>清空接收区</Button>
                   </div>
-                  <Card size="small" >
+                  <Card size="small" style={{ border: isDarkMode ? '1px solid #303030' : '1px solid #d9d9d9' }}>
                     <div style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', height: 'calc(100vh - 370px)', overflow: 'auto' }} ref={reportTextAreaRef} id="iptLog">
                       {reportContent}
                     </div>
