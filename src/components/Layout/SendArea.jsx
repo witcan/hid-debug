@@ -119,9 +119,9 @@ const SendArea = () => {
         </div>
       </div>
 
-      <div style={{ marginTop: '20px' }}>
+      {/* <div style={{ marginTop: '20px' }}>
         <BulkSend outputData={outputData} totalBytes={totalBytes} />
-      </div>
+      </div> */}
 
       <div style={{ marginTop: '20px' }}>
         <Shortcut outputData={outputData} setOutputData={setOutputData} />
