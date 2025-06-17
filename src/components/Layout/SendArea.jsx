@@ -76,7 +76,7 @@ const SendArea = () => {
     <div>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
         <Text style={{ flex: 1 }}>发送区</Text>
-        <UploadFile totalBytes={totalBytes} setOutputData={setOutputData} />
+        {/* <UploadFile totalBytes={totalBytes} setOutputData={setOutputData} /> */}
       </div>
 
       <TextArea

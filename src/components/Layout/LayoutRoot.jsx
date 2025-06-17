@@ -83,7 +83,7 @@ const LayoutRoot = () => {
     <ConfigProvider
       theme={{
         algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
-        token: { motion: false }
+        // token: { motion: false }
       }}
     >
       <div style={{ background: isDarkMode ? '#141414' : '#ffffff', height: '100vh' }}>
